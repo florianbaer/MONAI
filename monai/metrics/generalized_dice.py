@@ -167,12 +167,14 @@ def compute_generalized_dice(
 
     # Handle zero division. Where denom == 0 and the prediction volume is 0, score is 1.
     # Where denom == 0 but the prediction volume is not 0, score is 0
-    y_pred_o = y_pred_o.sum(dim=-1)
     denom_zeros = denom == 0
-    generalized_dice_score[denom_zeros] = torch.where(
-        (y_pred_o == 0)[denom_zeros],
-        torch.tensor(1.0, device=generalized_dice_score.device),
-        torch.tensor(0.0, device=generalized_dice_score.device),
-    )
+    
+    if torch.any(denom_zeros):
+        y_pred_o = y_pred_o.sum(dim=-1)
 
+        generalized_dice_score[denom_zeros] = torch.where(
+            (y_pred_o == 0)[denom_zeros],
+            torch.tensor(1.0, device=generalized_dice_score.device),
+            torch.tensor(0.0, device=generalized_dice_score.device),
+        )
     return generalized_dice_score
